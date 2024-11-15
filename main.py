@@ -14,7 +14,7 @@ def main(llm_adapter, db_adapter):
             print("Generated SQL Query:", sql_query, "\n")
             result = db_adapter.execute_query(sql_query)
             if result["success"]:
-                if result["results"] is not None:
+                if len(result["results"]) != 0:
                     print("Query Results:")
                     for row in result["results"]:
                         print(row)
