@@ -1,8 +1,10 @@
 import ollama
 
 class OllamaAdapter:
-    def __init__(self, model="llama3.2"):
+    def __init__(self, db, model="llama3.2", plsql=False):
         self.model = model
+        self.db = db
+        self.plsql = plsql
 
     def generate_sql(self, nl_request, schema_dict):
         """Convert natural language request to SQL using Ollama API."""
@@ -12,7 +14,7 @@ class OllamaAdapter:
         ])
         prompt = (
             f"Sqlite3 Database schema:\n{schema_info}\n\n"
-            f"Convert the following natural language request to an sqlite3 SQL query: {nl_request}"
+            f"Convert the following natural language request to an {self.db}, {'non' if self.plsql == True else ''} PL/SQL SQL query: {nl_request}"
         )
 
         response = ollama.chat(model=self.model, messages=[

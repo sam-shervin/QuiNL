@@ -6,15 +6,15 @@ import time
 
 def main(llm_adapter, db_adapter):
     while True:
-        time1 = time.time()
         schema_dict = db_adapter.get_tables_and_schema()
         nl_request = input("\n\nEnter a natural language request (or 'exit' to quit): ")
+        time1 = time.time()
         print("Processing request...\n\n")
         if nl_request.lower() == "exit":
             break
         try:
             sql_query = llm_adapter.generate_sql(nl_request, schema_dict)
-            print("Generated SQL Query:", sql_query, "\n")
+            print("Generated SQL Query:\n", sql_query, "\n")
             result = db_adapter.execute_query(sql_query)
             if result["success"]:
                 if len(result["results"]) != 0:
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     llm_choice = input("Choose LLM (1: Ollama, 2: OpenAI): ").strip()
     if llm_choice == "1":
-        llm_adapter = OllamaAdapter(model="llama3.2") # You can choose a different model from https://ollama.com/library
+        llm_adapter = OllamaAdapter(model="llama3.2", db=db_adapter()) # You can choose a different model from https://ollama.com/library
     elif llm_choice == "2":
         api_key = input("Enter OpenAI API key: ").strip()
         llm_adapter = OpenAIAdapter(api_key=api_key)

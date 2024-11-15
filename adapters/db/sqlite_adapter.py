@@ -4,6 +4,9 @@ class SQLiteAdapter:
     def __init__(self, db_path):
         self.db_path = db_path
 
+    def __call__(self, *args, **kwds):
+        return "sqlite3"
+    
     def get_tables_and_schema(self):
         """Retrieve all tables and their schemas in the SQLite database."""
         conn = sqlite3.connect(self.db_path)
