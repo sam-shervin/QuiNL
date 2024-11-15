@@ -24,9 +24,11 @@ def interpret_natural_language_request(nl_request, schema_dict):
     Convert natural language request to SQL query using LLaMA 3.1 model via Ollama API.
     """
     schema_info = "\n".join([f"Table: {table}\n" + "\n".join([f" - Column: {col[1]}, Type: {col[2]}" for col in schema]) for table, schema in schema_dict.items()])
-    prompt = f"Database schema:\n{schema_info}\n\nConvert the following natural language request to an SQL query: {nl_request}"
+    prompt = f"Sqlite3 Database schema:\n{schema_info}\n\nConvert the following natural language request to an sqlite3 SQL query: {nl_request}"
 
-    response = ollama.chat(model='llama3.1', messages=[
+    response = ollama.chat(model='llama3.2', messages=[     # change model to your desired model -  llama3.1, llama3.2, 
+                                                            #                                       llama3, llama2, qwen2.5-coder:0.5b
+                                                            #                                       qwen2.5-coder:1.5b, 
         {
             'role': 'user',
             'content': prompt,
@@ -47,17 +49,41 @@ for table, schema in schemas.items():
     print("\n")
 
 # Example of using the LLM integration
-nl_request = "List all users with an age above 30."
-sql_query = interpret_natural_language_request(nl_request, schemas)
-print("Generated SQL Query:", sql_query)
+# nl_request = "Join the users table and the orders table using the user_id column and display the results"
+# nl_request = "Get the names of all users who have placed an order"
+# nl_request = "Get the total number of orders placed by each user"
+# nl_request = "Insert a new user with the name 'Sam Shervin S' and age 20"
+# nl_request = "Display everything in the users table"
 
-# Execute the generated SQL query
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
-cursor.execute(sql_query)
-results = cursor.fetchall()
+while True:
+    nl_request = input("Enter a natural language request: ")
+    if nl_request.lower() == "exit":
+        break
+    sql_query = interpret_natural_language_request(nl_request, schemas)
+    if "```sql" in sql_query:
+        sql_query = sql_query.split("```sql")[1].strip()
+        if "```" in sql_query:
+            sql_query = sql_query.split("```")[0].strip()
 
-for row in results:
-    print(row)
+    print("Generated SQL Query:", sql_query)
 
-conn.close()
+    # Execute the generated SQL query
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.executescript(sql_query)
+
+    # if select in sql_query, get all the select commands with the help of semicolons and send to cursor.execute()
+    if "select" in sql_query.lower():
+        sql_query = sql_query.split(";")
+        for query in sql_query:
+            if "select" in query.lower():
+                print("Executing query:", query)
+                cursor.execute(query)
+                results = cursor.fetchall()
+
+                for row in results:
+                    print(row)
+
+    conn.commit()
+    conn.close()
+    print("Command executed successfully.\n")
