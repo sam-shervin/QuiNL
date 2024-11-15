@@ -33,7 +33,7 @@ class SQLiteAdapter:
                 sql_query = sql_query.split(";")
                 for query in sql_query:
                     if "select" in query.lower():
-                        cursor.execute(sql_query)
+                        cursor.execute(query)
                         results.extend(cursor.fetchall())
                     results.append("\n")
             conn.commit()

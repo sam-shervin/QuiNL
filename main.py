@@ -1,9 +1,12 @@
 from adapters.db.sqlite_adapter import SQLiteAdapter
 from adapters.llm.llm_ollama import OllamaAdapter
 from adapters.llm.llm_openai import OpenAIAdapter
+import time
+
 
 def main(llm_adapter, db_adapter):
     while True:
+        time1 = time.time()
         schema_dict = db_adapter.get_tables_and_schema()
         nl_request = input("\n\nEnter a natural language request (or 'exit' to quit): ")
         print("Processing request...\n\n")
@@ -24,6 +27,9 @@ def main(llm_adapter, db_adapter):
                 print(f"Error: {result['error']}")
         except Exception as e:
             print(f"An error occurred: {e}")
+        time2 = time.time()
+        print(f"Time taken to execute the command: {time2 - time1:.2f} seconds\n")
+
 
 if __name__ == "__main__":
     db_adapter = SQLiteAdapter(db_path="your_database.db")
